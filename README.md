@@ -52,9 +52,16 @@ TODO:
 [  ]  - Add SSL/TLS support
 
 [  ]  - Add CACERT load support
+
 [  ]  - Add random UserAgent support
+
 [  ]  - Add random proxy load support
+
 [  ]  - Add support to save session to continues extracting urls other hour...
+
 [  ]  - Add Pause support
+
 [  ]  - add support to save XML
+
 [  ]  - Add support to save sqlite database
+
