@@ -12,11 +12,11 @@ In construction...
 
 TODO:
 
-Validate URL relative path with DFA 
+  Validate URL relative path with DFA 
 
-Add URL parse with cast trick 
+  Add URL parse with cast trick 
 
-Add url parse with SSE42 
+  Add url parse with SSE42 
 
 Create database with SQLite 
 
@@ -50,7 +50,7 @@ Add function to use black list regex
 
 Add threads
 
-Add OpenMPI optins
+Add OpenMPI options
 
 Add SSL/TLS support
 
