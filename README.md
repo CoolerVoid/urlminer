@@ -9,9 +9,9 @@ In construction...
 
 TODO:
 
-[ X ]  - Validate URL relative path with DFA [X]
+[ X ]  - Validate URL relative path with DFA 
 
-[ X ]  - Add URL parse with cast trick [X]
+[ X ]  - Add URL parse with cast trick 
 
 [   ]  - Add url parse with SSE42 
 
