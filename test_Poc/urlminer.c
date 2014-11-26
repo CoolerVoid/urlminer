@@ -158,18 +158,17 @@ yy3:
 void extract_urls(char * inputBuffer,char *domain)
 {
 // this trick is not common, i think use other thing at the future
-	int href = *(int *)"href",lenbuf=strlen(inputBuffer),lendomain=strlen(domain),i=0,x=0;
+	int lenbuf=strlen(inputBuffer),lendomain=strlen(domain),i=0,x=0;
  	char *p=NULL,*tmp=NULL,*s=malloc(lenbuf*sizeof(char)+1);
 
 	p=inputBuffer;
 
 
 		do{
- 			x = *(int *)p;
 			i=0;
 //
 //TODO: add "src=" to parse too
-			if(x == href && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
+			if( strcasestr(p,"href") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
 			{	if(p[4]=='=')
 					p += 6;
 				else
@@ -178,7 +177,7 @@ void extract_urls(char * inputBuffer,char *domain)
 					s[i] = *p;
 					p++;
 					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"') && i < lenbuf);
+				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
 
 				s[i] = '\n';
 
@@ -188,7 +187,65 @@ void extract_urls(char * inputBuffer,char *domain)
 					 	if(tmp && tmp != NULL)	
 						{
 // TODO: add URL data at "Redis",hash table or SQLite...
-							printf("%s",tmp);
+							printf("href = %s",tmp);
+							memset(tmp,0,strlen(tmp));
+						}
+					}
+				
+				memset(s,0,lenbuf);
+				
+			}
+
+			i=0;
+			if( strcasestr(p,"acti") && (p[6] == '=' || (p[6] == ' ' && p[7] == '='  ) ))
+			{	if(p[6]=='=')
+					p += 8;
+				else
+					p+=9;
+				do{
+					s[i] = *p;
+					p++;
+					i++;
+				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
+
+				s[i] = '\n';
+
+					if(s)
+					{ 
+						tmp=validate_url(s,domain);
+					 	if(tmp && tmp != NULL)	
+						{
+// TODO: add URL data at "Redis",hash table or SQLite...
+							printf("action = %s",tmp);
+							memset(tmp,0,strlen(tmp));
+						}
+					}
+				
+				memset(s,0,lenbuf);
+				
+			}
+
+			i=0;
+			if( strcasestr(p," src") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
+			{	if(p[4]=='=')
+					p += 6;
+				else
+					p+=7;
+				do{
+					s[i] = *p;
+					p++;
+					i++;
+				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
+
+				s[i] = '\n';
+
+					if(s)
+					{ 
+						tmp=validate_url(s,domain);
+					 	if(tmp && tmp != NULL)	
+						{
+// TODO: add URL data at "Redis",hash table or SQLite...
+							printf("src = %s",tmp);
 							memset(tmp,0,strlen(tmp));
 						}
 					}
@@ -197,6 +254,7 @@ void extract_urls(char * inputBuffer,char *domain)
 					
 				
 			}
+
 			p++;
 		}while(p[5] != '\0' && i < lenbuf);
 
@@ -217,7 +275,7 @@ int main(void)
   curl = curl_easy_init();
   if(curl) {
 
-    curl_easy_setopt(curl, CURLOPT_URL, "http://mural.codigofonte.net/exibir.php?id=27616&pag=11");
+    curl_easy_setopt(curl, CURLOPT_URL, "http://www.vulcan.com.br/Contato.aspx");
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
 
@@ -233,7 +291,7 @@ int main(void)
     }
     else {
       	printf("%s\n",chunk.memory);
-	extract_urls(chunk.memory,"http://mural.codigofonte.net");
+	extract_urls(chunk.memory,"http://www.vulcan.com.br");
     }
 
     curl_easy_cleanup(curl);

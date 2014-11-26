@@ -30,13 +30,13 @@ void create_url_tables(sqlite3 *database)
 	"CREATE TABLE url_list("
 	"  urlid   INTEGER PRIMARY KEY AUTOINCREMENT,"
 	"  url     varchar(1024) NOT NULL UNIQUE, "
-	"  depth   INTEGER,"
+	"  type   varchar(16),"      // type form,hyperlink... if is form need save response to extract params...
 	"  position INTEGER,"
 	"  thread INTEGER"
 	");"
 	"CREATE TABLE page ("
 	"  pageid  INTEGER primary key autoincrement,"
-	"  source  TEXT,"
+	"  source  TEXT,"            // response of page, if need parse params of form to fuzz
 	"  urlid   INTEGER,"
 	"  FOREIGN KEY(urlid) REFERENCES url_list(urlid)"
 	");";
