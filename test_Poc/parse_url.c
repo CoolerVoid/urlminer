@@ -4,6 +4,13 @@
 #include <curl/curl.h>
 #include <alloca.h>  // some times i think, use alloca is a good idea...
 
+void RemoveSpaces(char *str1)  
+{
+    char *str2; 
+    str2=str1;  
+    while (*str2==' ') str2++;  
+    if (str2!=str1) memmove(str1,str2,strlen(str2)+1);  
+}
 
 // simple DFA to validate URL and path
 char *validate_url(char* p, char *domain)
@@ -135,24 +142,23 @@ void extract_urls(char * inputBuffer,char *domain)
 // this trick is not common, i think use other thing at the future
 	int lenbuf=strlen(inputBuffer),lendomain=strlen(domain),i=0,x=0;
  	char *p=NULL,*tmp=NULL,*s=malloc(lenbuf*sizeof(char)+1);
-
+	RemoveSpaces(inputBuffer);
 	p=inputBuffer;
 
-
+	
 		do{
 			i=0;
 //
 //TODO: add "src=" to parse too
-			if( strcasestr(p,"href") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
-			{	if(p[4]=='=')
-					p += 6;
-				else
-					p+=7;
+			if( p[0]=='h' && p[1] == 'r' && p[2] == 'e' && p[3]=='f' && p[4] == '=' )
+			{
+				p += 6;
+				
 				do{
 					s[i] = *p;
 					p++;
 					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
+				}while( ( *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
 
 				s[i] = '\n';
 
@@ -168,14 +174,13 @@ void extract_urls(char * inputBuffer,char *domain)
 					}
 				
 				memset(s,0,strlen(s));
-				
+					
 			}
 
-			if( strcasestr(p,"acti") && (p[6] == '=' || (p[6] == ' ' && p[7] == '='  ) ))
+			if( strcasestr(p,"acti") && (p[6] == '=' ))
 			{	if(p[6]=='=')
 					p += 8;
-				else
-					p+=9;
+				
 				do{
 					s[i] = *p;
 					p++;
@@ -195,14 +200,12 @@ void extract_urls(char * inputBuffer,char *domain)
 					}
 				
 				memset(s,0,strlen(s));
-				
+			p++;	
 			}
 
-			if( strcasestr(p," src") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
+			if( strcasestr(p," src") && (p[4] == '=' ))
 			{	if(p[4]=='=')
 					p += 6;
-				else
-					p+=7;
 				do{
 					s[i] = *p;
 					p++;

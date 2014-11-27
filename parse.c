@@ -1,112 +1,103 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <alloca.h>
 #include "mem_ops.h"
+#include "string_ops.h"
 #include "validate.h"
 
-// extract_urls
-void extract_urls(char * inputBuffer,char *domain)
+
+void extract_url(char *response,char *domain)
 {
-	int lenbuf=strlen(inputBuffer),lendomain=strlen(domain),i=0,x=0;
- 	char *p=NULL,*tmp=NULL,*s=xmalloc(lenbuf*sizeof(char)+1);
+ int lenbuf=strlen(response)*sizeof(char),x=0;
+ char *p=response;
+ char *str=xmalloc(lenbuf+1);
+ char *url=alloca(lenbuf),*act=p,*src=p;
+ 
+ memset(str,0,lenbuf);
+ p=RmSpace(p);
+ memset(url,0,lenbuf-1);
 
-	p=inputBuffer;
-
+//parse href=
+ do{	
+	if(p[0]=='h' && p[1]=='r'&& p[2]=='e' && p[4]=='=')
+	{
+		p+=6;
 
 		do{
-			i=0;
-			if( strcasestr(p,"href") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
-			{	if(p[4]=='=')
-					p += 6;
-				else
-					p+=7;
-				do{
-					s[i] = *p;
-					p++;
-					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
-
-				s[i] = '\n';
-
-					if(s)
-					{ 
-						tmp=validate_url(s,domain);
-					 	if(tmp && tmp != NULL)	
-						{
-							printf("href = %s",tmp);
-							memset(tmp,0,strlen(tmp));
-						}
-					}
-				
-				memset(s,0,lenbuf);
-					
-				
-			}
-
-			i=0;
-			if( strcasestr(p,"acti") && (p[6] == '=' || (p[6] == ' ' && p[7] == '='  ) ))
-			{	if(p[6]=='=')
-					p += 8;
-				else
-					p+=9;
-				do{
-					s[i] = *p;
-					p++;
-					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
-
-				s[i] = '\n';
-
-					if(s)
-					{ 
-						tmp=validate_url(s,domain);
-					 	if(tmp && tmp != NULL)	
-						{
-							printf("action = %s",tmp);
-							memset(tmp,0,strlen(tmp));
-						}
-					}
-				
-				memset(s,0,lenbuf);
-					
-				
-			}
-
-			i=0;
-			if( strcasestr(p," src") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
-			{	if(p[4]=='=')
-					p += 6;
-				else
-					p+=7;
-				do{
-					s[i] = *p;
-					p++;
-					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
-
-				s[i] = '\n';
-
-					if(s)
-					{ 
-						tmp=validate_url(s,domain);
-					 	if(tmp && tmp != NULL)	
-						{
-							printf("src = %s",tmp);
-							memset(tmp,0,strlen(tmp));
-						}
-					}
-				
-				memset(s,0,lenbuf);
-					
-				
-			}
-
-
-
-
+			str[x]=*p;
 			p++;
-		}while(p[5] != '\0' && i < lenbuf);
+			x++;
+		} while((*p != '>' && *p != '"' && *p != '\'') && x != lenbuf);
+		str[x]='\0';
 
-	xfree((void **)&s);
+        	url=validate_url(str,domain);
+		printf("href = %s \n",url);
+
+		x=0;
+	}
+
+	p++;
+
+ }while(p[5]!='\0');
+
+
+
+ memset(str,0,strlen(str));
+ memset(url,0,strlen(url));
+
+// parse action=
+ do{
+
+	if(act[0]=='a' && act[1]=='c'&& act[2]=='t' && act[6]=='=')
+	{
+		act+=8;
+
+		do{
+			str[x]=*act;
+			act++;
+			x++;
+		} while((*act != '>' && *act != '"' && *act != '\'') && x != lenbuf);
+                str[x]='\0';
+		url=validate_url(str,domain);
+		printf("action = %s \n",url);
+//		memset(str,0,lenbuf);
+//		memset(url,0,strlen(url));
+
+		x=0;
+	}
+
+	act++;
+
+ }while(act[7]!='\0');
+
+ memset(str,0,strlen(str));
+ memset(url,0,strlen(url));
+
+ // parse src=
+ do{	
+
+	if(src[0]=='s' && src[1]=='r'&& src[2]=='c' && src[3]=='=')
+	{
+		src+=5;
+
+		do{
+			str[x]=*src;
+			src++;
+			x++;
+		} while((*src != '>' && *src != '"' && *src != '\'' ) && x != lenbuf);
+		str[x]='\0';
+
+		url=validate_url(str,domain);
+		printf("src = %s \n",url);
+		memset(url,0,strlen(url));
+		x=0;
+	}
+
+	src++;
+
+ }while(src[4]!='\0');
+
+
+ xfree((void **)&str);
 }
-

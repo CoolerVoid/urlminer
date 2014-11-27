@@ -158,7 +158,7 @@ char *validate_url(char* p, char *domain)
 	}
 yy2:
 	{ 
-		int sizeurl=strlen(gamma)+strlen(domain)+200;
+		int sizeurl=strlen(gamma)+strlen(domain)*5;
 		char *newurl=alloca(sizeof(char)*sizeurl);
 		memset(newurl,0,sizeurl-1);
 		if(*(domain+(strlen(domain)-1))=='/')
@@ -174,6 +174,9 @@ yy2:
 				strcat(newurl,"/");
 			strcat(newurl,gamma);
 		}
+
+	//	free(newurl);
+
 		return newurl; 
 	}
 yy3:

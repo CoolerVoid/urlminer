@@ -30,6 +30,8 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
 
+
+
 // simple DFA to validate URL and path
 char *validate_url(char* p, char *domain)
 {
@@ -87,7 +89,7 @@ char *validate_url(char* p, char *domain)
 	}
 yy2:
 	{ 
-		int sizeurl=strlen(gamma)+strlen(domain)+200;
+		int sizeurl=strlen(gamma)+strlen(domain)*5;
 		char *newurl=alloca(sizeof(char)*sizeurl);
 		memset(newurl,0,sizeurl-1);
 		if(*(domain+(strlen(domain)-1))=='/')
@@ -103,6 +105,9 @@ yy2:
 				strcat(newurl,"/");
 			strcat(newurl,gamma);
 		}
+
+	//	free(newurl);
+
 		return newurl; 
 	}
 yy3:
@@ -154,113 +159,141 @@ yy3:
 
 }
 
-// extract_urls
-void extract_urls(char * inputBuffer,char *domain)
+int char_type_counter(char *string,char type)
 {
-// this trick is not common, i think use other thing at the future
-	int lenbuf=strlen(inputBuffer),lendomain=strlen(domain),i=0,x=0;
- 	char *p=NULL,*tmp=NULL,*s=malloc(lenbuf*sizeof(char)+1);
+	int counter=0;
+ 
+	while(*string != '\0')
+	{
+		if(*string==type) 
+			counter++;
+		string++;
+	}
+  
+	return counter;
+}
 
-	p=inputBuffer;
+// to remove blank
+char *RmSpace(char* input)                                                  
+{
+	int i=0,j=0,len=strlen(input),buf=len-char_type_counter(input,' ');
+	char *output=NULL;
+	output = malloc(buf*sizeof(char)+1);
 
+	while (i!=len)                       
+	{
+		if (input[i]!=' ')                                                  
+			output[j]=input[i];                                            
+		else
+			j--;   
+		i++;
+		j++;                                                      
+	}
+
+	output[j] ='\0';
+
+	free(output);
+
+	return output;                                                     
+}
+
+void extract_url(char *response,char *domain)
+{
+ int lenbuf=strlen(response)*sizeof(char),x=0;
+ char *p=response;
+ char *str=malloc(lenbuf+1);
+ char *url=alloca(lenbuf),*act=p,*src=p;
+ 
+ memset(str,0,lenbuf);
+ p=RmSpace(p);
+ memset(url,0,lenbuf-1);
+
+//parse href=
+ do{	
+	if(p[0]=='h' && p[1]=='r'&& p[2]=='e' && p[4]=='=')
+	{
+		p+=6;
 
 		do{
-			i=0;
-//
-//TODO: add "src=" to parse too
-			if( strcasestr(p,"href") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
-			{	if(p[4]=='=')
-					p += 6;
-				else
-					p+=7;
-				do{
-					s[i] = *p;
-					p++;
-					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
-
-				s[i] = '\n';
-
-					if(s)
-					{ 
-						tmp=validate_url(s,domain);
-					 	if(tmp && tmp != NULL)	
-						{
-// TODO: add URL data at "Redis",hash table or SQLite...
-							printf("href = %s",tmp);
-							memset(tmp,0,strlen(tmp));
-						}
-					}
-				
-				memset(s,0,lenbuf);
-				
-			}
-
-			i=0;
-			if( strcasestr(p,"acti") && (p[6] == '=' || (p[6] == ' ' && p[7] == '='  ) ))
-			{	if(p[6]=='=')
-					p += 8;
-				else
-					p+=9;
-				do{
-					s[i] = *p;
-					p++;
-					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
-
-				s[i] = '\n';
-
-					if(s)
-					{ 
-						tmp=validate_url(s,domain);
-					 	if(tmp && tmp != NULL)	
-						{
-// TODO: add URL data at "Redis",hash table or SQLite...
-							printf("action = %s",tmp);
-							memset(tmp,0,strlen(tmp));
-						}
-					}
-				
-				memset(s,0,lenbuf);
-				
-			}
-
-			i=0;
-			if( strcasestr(p," src") && (p[4] == '=' || (p[4] == ' ' && p[5] == '='  ) ))
-			{	if(p[4]=='=')
-					p += 6;
-				else
-					p+=7;
-				do{
-					s[i] = *p;
-					p++;
-					i++;
-				}while( (*p != ' ' && *p != '>' && *p != '"' && *p != '\'') && i < lenbuf);
-
-				s[i] = '\n';
-
-					if(s)
-					{ 
-						tmp=validate_url(s,domain);
-					 	if(tmp && tmp != NULL)	
-						{
-// TODO: add URL data at "Redis",hash table or SQLite...
-							printf("src = %s",tmp);
-							memset(tmp,0,strlen(tmp));
-						}
-					}
-				
-				memset(s,0,lenbuf);
-					
-				
-			}
-
+			str[x]=*p;
 			p++;
-		}while(p[5] != '\0' && i < lenbuf);
+			x++;
+		} while((*p != '>' && *p != '"' && *p != '\'') && x != lenbuf);
+		str[x]='\0';
 
-	free(s);
-	s=NULL;
+        	url=validate_url(str,domain);
+		printf("href = %s \n",url);
+
+		x=0;
+	}
+
+	p++;
+
+ }while(p[5]!='\0');
+
+
+
+ memset(str,0,strlen(str));
+ memset(url,0,strlen(url));
+
+// parse action=
+ do{
+
+	if(act[0]=='a' && act[1]=='c'&& act[2]=='t' && act[6]=='=')
+	{
+		act+=8;
+
+		do{
+			str[x]=*act;
+			act++;
+			x++;
+		} while((*act != '>' && *act != '"' && *act != '\'') && x != lenbuf);
+                str[x]='\0';
+		url=validate_url(str,domain);
+		printf("action = %s \n",url);
+//		memset(str,0,lenbuf);
+//		memset(url,0,strlen(url));
+
+		x=0;
+	}
+
+	act++;
+
+ }while(act[7]!='\0');
+
+ memset(str,0,strlen(str));
+ memset(url,0,strlen(url));
+
+ // parse src=
+ do{	
+
+	if(src[0]=='s' && src[1]=='r'&& src[2]=='c' && src[3]=='=')
+	{
+		src+=5;
+
+		do{
+			str[x]=*src;
+			src++;
+			x++;
+		} while((*src != '>' && *src != '"' && *src != '\'' ) && x != lenbuf);
+		str[x]='\0';
+
+		url=validate_url(str,domain);
+		printf("src = %s \n",url);
+		memset(url,0,strlen(url));
+		x=0;
+	}
+
+	src++;
+
+ }while(src[4]!='\0');
+
+
+
+ free(str);
+
 }
+
 
 int main(void)
 {
@@ -291,7 +324,7 @@ int main(void)
     }
     else {
       	printf("%s\n",chunk.memory);
-	extract_urls(chunk.memory,"http://www.vulcan.com.br");
+	extract_url(chunk.memory,"http://www.vulcan.com.br");
     }
 
     curl_easy_cleanup(curl);

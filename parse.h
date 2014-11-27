@@ -4,4 +4,4 @@
 #include "mem_ops.h"
 
 // extract_urls
-void extract_urls(char * inputBuffer,char *domain);
+void extract_url(char *response,char *domain);
