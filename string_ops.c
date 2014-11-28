@@ -117,27 +117,22 @@ char *payload_injector(char * ptr,char * payload,int counter)
 }
 
 
-int 
-strstr_regex(char *string, char *expression)
+int match_test(const char *string,const char *expression)
 {
+	const char *err;
+	int errofs=0,offset=0;
+	int ovector[100];
 
-	regex_t regex;
-	int reti;
+	pcre *re = pcre_compile(expression, 0, &err, &errofs, NULL);
+	if (re == NULL) 
+	{
+		fprintf(stderr, " regex compilation failed\n");
+		exit(EXIT_FAILURE);
+	}
+	const int rc = pcre_exec(re, NULL, string, strlen(string), offset, 0, ovector, array_elements(ovector));
+	pcre_free(re);
 
-// Compile regular expression
-	reti = regcomp(&regex, expression, REG_EXTENDED);
-
-	if(reti) 
-		DEBUG("Could not compile regex ! \n");
-
-	reti = regexec(&regex, string, 0, NULL, 0);
-
-	regfree(&regex);
-  
-	if( !reti )
-		return 1;
-	else 
-		return 0;
+	return rc > 0;
 
 }
 
