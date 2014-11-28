@@ -44,7 +44,7 @@ $./urlminer
 #include "web.h"
 #include "validate.h"
 
-void init_banner_odin()
+void init_banner_miner()
 {
  puts(
 ".     .       .  .   . .   .   . . . .  +  .  +.      \n"
